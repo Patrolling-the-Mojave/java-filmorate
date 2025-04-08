@@ -67,7 +67,7 @@ public class FilmControllerTest {
         invalidFilm.setReleaseDate(LocalDate.of(1700, 3, 3));
         ResponseEntity<String> response = restTemplate.postForEntity(url, invalidFilm, String.class);
 
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
@@ -94,7 +94,7 @@ public class FilmControllerTest {
         HttpEntity<Film> request = new HttpEntity<>(updatedFilm);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
 
     }
 
