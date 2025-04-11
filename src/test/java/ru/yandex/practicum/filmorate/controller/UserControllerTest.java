@@ -74,7 +74,7 @@ public class UserControllerTest {
         user.setLogin("my login");
         ResponseEntity<String> response = restTemplate.postForEntity(url, user, String.class);
 
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
@@ -88,7 +88,7 @@ public class UserControllerTest {
         HttpEntity<User> request = new HttpEntity<>(updatedUser);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
