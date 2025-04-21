@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.annotation.Login;
+import ru.yandex.practicum.filmorate.annotation.OnCreate;
+import ru.yandex.practicum.filmorate.annotation.OnUpdate;
 
 import java.time.LocalDate;
 

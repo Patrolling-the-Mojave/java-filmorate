@@ -3,14 +3,16 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.annotation.OnCreate;
+import ru.yandex.practicum.filmorate.annotation.OnUpdate;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.OnCreate;
-import ru.yandex.practicum.filmorate.model.OnUpdate;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import static ru.yandex.practicum.filmorate.util.Updates.runIfNotNull;
 
 @Slf4j
 @RestController
@@ -41,12 +43,10 @@ public class FilmController {
             log.warn("фильм с id " + newFilm.getId() + " не найден");
             throw new NotFoundException("фильм с id " + newFilm.getId() + " не найден");
         }
-
-        if (newFilm.getName() != null) oldFilm.setName(newFilm.getName());
-        if (newFilm.getDescription() != null) oldFilm.setDescription(newFilm.getDescription());
-        if (newFilm.getReleaseDate() != null) oldFilm.setReleaseDate(newFilm.getReleaseDate());
-        if (newFilm.getDuration() != null) oldFilm.setDuration(newFilm.getDuration());
-
+        runIfNotNull(newFilm.getName(), () -> oldFilm.setName(newFilm.getName()));
+        runIfNotNull(newFilm.getDescription(), () -> oldFilm.setDescription(newFilm.getDescription()));
+        runIfNotNull(newFilm.getReleaseDate(), () -> oldFilm.setReleaseDate(newFilm.getReleaseDate()));
+        runIfNotNull(newFilm.getDuration(), () -> oldFilm.setDuration(newFilm.getDuration()));
         log.debug("обновленный фильм - " + oldFilm);
         return oldFilm;
     }

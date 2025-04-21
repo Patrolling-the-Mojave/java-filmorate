@@ -3,15 +3,16 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.annotation.OnCreate;
+import ru.yandex.practicum.filmorate.annotation.OnUpdate;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.OnCreate;
-import ru.yandex.practicum.filmorate.model.OnUpdate;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import static ru.yandex.practicum.filmorate.util.Updates.runIfNotNull;
 
 @Slf4j
 @RestController
@@ -47,10 +48,10 @@ public class UserController {
             log.warn("пользователь с id - " + newUser.getId() + " не найден");
             throw new NotFoundException("пользователь с id - " + newUser.getId() + " не найден");
         }
-        if (newUser.getEmail() != null) oldUser.setEmail(newUser.getEmail());
-        if (newUser.getBirthday() != null) oldUser.setBirthday(newUser.getBirthday());
-        if (newUser.getLogin() != null) oldUser.setLogin(newUser.getLogin());
-        if (newUser.getName() != null) oldUser.setName(newUser.getName());
+        runIfNotNull(newUser.getEmail(), () -> oldUser.setEmail(newUser.getEmail()));
+        runIfNotNull(newUser.getBirthday(), () -> oldUser.setBirthday(newUser.getBirthday()));
+        runIfNotNull(newUser.getLogin(), () -> oldUser.setLogin(newUser.getLogin()));
+        runIfNotNull(newUser.getName(), () -> oldUser.setName(newUser.getName()));
         log.debug("обновленный пользователь - " + oldUser);
         return oldUser;
     }
