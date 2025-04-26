@@ -11,11 +11,14 @@ import ru.yandex.practicum.filmorate.annotation.OnCreate;
 import ru.yandex.practicum.filmorate.annotation.OnUpdate;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
 public class User {
     private Integer id;
+    private final Set<Integer> friends = new HashSet<>();
 
     @Email(message = "email должен соответствовать формату", groups = {OnUpdate.class, OnCreate.class})
     @NotBlank(message = "email не должен быть пустым", groups = OnCreate.class)

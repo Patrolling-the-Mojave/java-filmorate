@@ -103,7 +103,7 @@ public class FilmControllerTest {
         HttpEntity<Film> request = new HttpEntity<>(updatedFilm);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
     }
 
