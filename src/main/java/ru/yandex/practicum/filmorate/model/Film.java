@@ -12,11 +12,15 @@ import ru.yandex.practicum.filmorate.annotation.OnCreate;
 import ru.yandex.practicum.filmorate.annotation.OnUpdate;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
-public class Film {
+public class Film implements Comparable<Film> {
+    @NotNull(groups = OnUpdate.class)
     private Integer id;
+    private final Set<Integer> likes = new HashSet<>();
 
     @NotBlank(groups = OnCreate.class, message = "имя не должно быть пустым")
     private String name;
@@ -29,4 +33,9 @@ public class Film {
 
     @Positive(groups = {OnCreate.class, OnUpdate.class})
     private Integer duration;
+
+    @Override
+    public int compareTo(Film o) {
+        return Integer.compare(this.likes.size(), o.likes.size());
+    }
 }
