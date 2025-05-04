@@ -25,9 +25,8 @@ public class Film implements Comparable<Film> {
     private final Set<Integer> likes = new HashSet<>();
 
 
-    private Set<Genre> genres = new HashSet<>(); //Множество элементов перечисления - Genre
-    @NotNull(groups = OnCreate.class)
-    private final MpaRating rating;
+    private final Set<Genre> genres = new HashSet<>(); //Множество элементов перечисления - Genre
+    private MpaRating rating;
 
     @NotBlank(groups = OnCreate.class, message = "имя не должно быть пустым")
     private String name;
