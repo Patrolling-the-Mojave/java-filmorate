@@ -10,6 +10,8 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.annotation.FilmReleaseDate;
 import ru.yandex.practicum.filmorate.annotation.OnCreate;
 import ru.yandex.practicum.filmorate.annotation.OnUpdate;
+import ru.yandex.practicum.filmorate.enums.Genre;
+import ru.yandex.practicum.filmorate.enums.MpaRating;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -21,6 +23,11 @@ public class Film implements Comparable<Film> {
     @NotNull(groups = OnUpdate.class)
     private Integer id;
     private final Set<Integer> likes = new HashSet<>();
+
+
+    private Set<Genre> genres = new HashSet<>(); //Множество элементов перечисления - Genre
+    @NotNull(groups = OnCreate.class)
+    private final MpaRating rating;
 
     @NotBlank(groups = OnCreate.class, message = "имя не должно быть пустым")
     private String name;
