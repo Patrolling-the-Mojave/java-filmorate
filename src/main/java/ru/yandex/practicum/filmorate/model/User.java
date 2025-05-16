@@ -9,9 +9,12 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.annotation.Login;
 import ru.yandex.practicum.filmorate.annotation.OnCreate;
 import ru.yandex.practicum.filmorate.annotation.OnUpdate;
+import ru.yandex.practicum.filmorate.enums.FriendshipStatus;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -19,6 +22,9 @@ import java.util.Set;
 public class User {
     private Integer id;
     private final Set<Integer> friends = new HashSet<>();
+
+    // хеш-таблица с id друга в качестве ключа и элемента перечисления FriendshipStatus в качестве значения
+    private final Map<Integer, FriendshipStatus> friendship = new HashMap<>();
 
     @Email(message = "email должен соответствовать формату", groups = {OnUpdate.class, OnCreate.class})
     @NotBlank(message = "email не должен быть пустым", groups = OnCreate.class)

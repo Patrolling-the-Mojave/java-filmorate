@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.yandex.practicum.filmorate.enums.MpaRating;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
@@ -29,6 +30,7 @@ public class FilmControllerTest {
                 .description("A thief who steals corporate secrets")
                 .releaseDate(LocalDate.of(2010, 7, 16))
                 .duration(148)
+                .rating(MpaRating.R)
                 .build();
 
     }
@@ -39,6 +41,7 @@ public class FilmControllerTest {
                 .name(null)
                 .description(null)
                 .duration(null)
+                .rating(null)
                 .build();
     }
 
