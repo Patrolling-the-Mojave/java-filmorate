@@ -4,8 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.annotation.OnCreate;
-import ru.yandex.practicum.filmorate.annotation.OnUpdate;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.NewFilmDto;
+import ru.yandex.practicum.filmorate.dto.UpdateFilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -21,17 +22,22 @@ public class FilmController {
     private final FilmService filmService;
 
     @GetMapping
-    public Collection<Film> findAll() {
+    public Collection<FilmDto> findAll() {
         return filmService.findAll();
     }
 
+    @GetMapping("/{id}")
+    public FilmDto findById(@PathVariable int id) {
+        return filmService.findById(id);
+    }
+
     @PostMapping
-    public Film create(@Validated(OnCreate.class) @RequestBody Film film) {
+    public FilmDto create(@Validated @RequestBody NewFilmDto film) {
         return filmService.addFilm(film);
     }
 
     @PutMapping
-    public Film update(@Validated(OnUpdate.class) @RequestBody Film newFilm) {
+    public FilmDto update(@Validated @RequestBody UpdateFilmDto newFilm) {
         return filmService.updateFilm(newFilm);
     }
 
@@ -49,5 +55,4 @@ public class FilmController {
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
         return filmService.getMostPopularFilms(count);
     }
-
 }

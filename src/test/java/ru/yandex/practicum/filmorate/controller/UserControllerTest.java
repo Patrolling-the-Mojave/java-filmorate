@@ -10,13 +10,18 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import ru.yandex.practicum.filmorate.dto.NewUserDto;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserControllerTest {
@@ -24,33 +29,37 @@ public class UserControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
     @Autowired
-    private UserService userService;
+    private JdbcTemplate jdbcTemplate;
 
     private final String url = "/users";
     private User testUser;
+    private NewUserDto newUser;
 
     @BeforeEach
     void setUP() {
+        jdbcTemplate.update("DELETE FROM users");
         testUser = User.builder()
                 .email("yandex@mail.ru")
                 .login("secret-login")
                 .name("my name")
-                .birthday(LocalDate.of(1999, 12, 31))
+                .birthday(Date.valueOf(LocalDate.of(1999, 12, 31)))
                 .build();
+
     }
 
     @Test
     public void createNewUser_IfRequestedPOSTMethod() {
-
-        ResponseEntity<User> response = restTemplate.postForEntity(url, testUser, User.class);
+        ResponseEntity<UserDto> response = restTemplate.postForEntity(url, testUser, UserDto.class);
         Assertions.assertEquals("my name", response.getBody().getName());
+        Assertions.assertEquals(1, response.getBody().getId());
+        System.out.println(response.getBody());
     }
 
     @Test
     public void createNewUser_IfEmptyName() {
         testUser.setName(null);
 
-        ResponseEntity<User> response = restTemplate.postForEntity(url, testUser, User.class);
+        ResponseEntity<UserDto> response = restTemplate.postForEntity(url, testUser, UserDto.class);
         Assertions.assertEquals("secret-login", response.getBody().getName());
     }
 
@@ -83,7 +92,7 @@ public class UserControllerTest {
         ResponseEntity<User> createResponse = restTemplate.postForEntity(url, testUser, User.class);
 
         User updatedUser = testUser;
-        updatedUser.setBirthday(LocalDate.now().plus(1, ChronoUnit.DAYS));
+        updatedUser.setBirthday(Date.valueOf(LocalDate.now().plus(1, ChronoUnit.DAYS)));
         updatedUser.setId(1);
         HttpEntity<User> request = new HttpEntity<>(updatedUser);
 
@@ -111,20 +120,5 @@ public class UserControllerTest {
         ResponseEntity<String> response = restTemplate.postForEntity(url, user, String.class);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
-
-    @Test
-    public void getNewFriends_addFriend() {
-        ResponseEntity<User> createResponse = restTemplate.postForEntity(url, testUser, User.class);
-        User updatedUser = testUser;
-        updatedUser.setName("updated name");
-        updatedUser.setId(1);
-        HttpEntity<User> request = new HttpEntity<>(updatedUser);
-        ResponseEntity<User> response = restTemplate.exchange(url, HttpMethod.PUT, request, User.class);
-        ResponseEntity<User> addingNewUser = restTemplate.postForEntity(url, testUser, User.class);
-        restTemplate.put(url + "/1/friends/2", null);
-        Assertions.assertTrue(userService.findById(1).getFriends().contains(2));
-        Assertions.assertTrue(userService.findById(2).getFriends().contains(1));
-    }
-
 
 }

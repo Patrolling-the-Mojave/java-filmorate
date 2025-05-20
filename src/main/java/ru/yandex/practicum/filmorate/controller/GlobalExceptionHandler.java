@@ -1,13 +1,14 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.dto.ErrorResponse;
 import ru.yandex.practicum.filmorate.exception.NoContentException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ParameterNotValidException;
-import ru.yandex.practicum.filmorate.dto.ErrorResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -28,5 +29,11 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ErrorResponse handleNoContent(final NoContentException ex) {
         return new ErrorResponse("No Content", ex.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleDuplicateKey(final DuplicateKeyException ex) {
+        return new ErrorResponse("Duplicate key", ex.getMessage());
     }
 }

@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,12 +10,19 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.enums.MpaRating;
+import org.springframework.test.context.ActiveProfiles;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.MpaDto;
+import ru.yandex.practicum.filmorate.dto.NewFilmDto;
+import ru.yandex.practicum.filmorate.dto.UpdateFilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.time.LocalDate;
 
+@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class FilmControllerTest {
@@ -22,34 +30,44 @@ public class FilmControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     private final String url = "/films";
 
-    private Film createValidFilm() {
-        return Film.builder()
+    private NewFilmDto createValidFilmDto() {
+        return NewFilmDto.builder()
                 .name("Inception")
                 .description("A thief who steals corporate secrets")
                 .releaseDate(LocalDate.of(2010, 7, 16))
                 .duration(148)
-                .rating(MpaRating.R)
+                .mpa(new MpaDto(1))
                 .build();
-
     }
 
-    private Film createAllNullFilm() {
-        return Film.builder()
-                .releaseDate(null)
-                .name(null)
-                .description(null)
-                .duration(null)
-                .rating(null)
+    private UpdateFilmDto createUpdateFilmDto(int id) {
+        return UpdateFilmDto.builder()
+                .id(id)
+                .name("Inception Updated")
+                .description("New description")
+                .releaseDate(LocalDate.of(2011, 8, 17))
+                .duration(150)
+                .mpa(new MpaRating(2, "PG"))
                 .build();
+    }
+
+    @BeforeEach
+    void setUp() {
+        jdbcTemplate.update("DELETE FROM film_likes");
+        jdbcTemplate.update("DELETE FROM film_genres");
+        jdbcTemplate.update("DELETE FROM film");
     }
 
     @Test
     public void getAllFilms_returnCreatedFilms_ifRequestedGETMethod() {
-        Film film = createValidFilm();
-        ResponseEntity<Film> createResponse = restTemplate.postForEntity(url, film, Film.class);
-        ResponseEntity<Film[]> response = restTemplate.getForEntity(url, Film[].class);
+        NewFilmDto film = createValidFilmDto();
+        ResponseEntity<FilmDto> createResponse = restTemplate.postForEntity(url, film, FilmDto.class);
+        ResponseEntity<FilmDto[]> response = restTemplate.getForEntity(url, FilmDto[].class);
 
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertEquals(1, response.getBody().length);
@@ -57,8 +75,8 @@ public class FilmControllerTest {
 
     @Test
     public void createNewFilm_ifRequestedPOSTMethod() {
-        Film film = createValidFilm();
-        ResponseEntity<Film> response = restTemplate.postForEntity(url, film, Film.class);
+        NewFilmDto film = createValidFilmDto();
+        ResponseEntity<FilmDto> response = restTemplate.postForEntity(url, film, FilmDto.class);
 
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertEquals("Inception", response.getBody().getName());
@@ -66,7 +84,7 @@ public class FilmControllerTest {
 
     @Test
     public void throwValidationException_ifEmptyName() {
-        Film invalidFilm = createValidFilm();
+        NewFilmDto invalidFilm = createValidFilmDto();
         invalidFilm.setName(" ");
         ResponseEntity<String> response = restTemplate.postForEntity(url, invalidFilm, String.class);
 
@@ -75,7 +93,7 @@ public class FilmControllerTest {
 
     @Test
     public void throwValidationException_ifInvalidReleaseDate() {
-        Film invalidFilm = createValidFilm();
+        NewFilmDto invalidFilm = createValidFilmDto();
         invalidFilm.setReleaseDate(LocalDate.of(1700, 3, 3));
         ResponseEntity<String> response = restTemplate.postForEntity(url, invalidFilm, String.class);
 
@@ -84,13 +102,12 @@ public class FilmControllerTest {
 
     @Test
     public void updateFilm_ifRequestedPUTMethod() {
-        Film film = createValidFilm();
-        ResponseEntity<Film> createResponse = restTemplate.postForEntity(url, film, Film.class);
-        Film updatedFilm = film;
-
+        NewFilmDto film = createValidFilmDto();
+        ResponseEntity<FilmDto> createResponse = restTemplate.postForEntity(url, film, FilmDto.class);
+        UpdateFilmDto updatedFilm = createUpdateFilmDto(1);
         updatedFilm.setName("Matrix");
-        updatedFilm.setId(1);
-        HttpEntity<Film> request = new HttpEntity<>(updatedFilm);
+
+        HttpEntity<UpdateFilmDto> request = new HttpEntity<>(updatedFilm);
 
         ResponseEntity<Film> response = restTemplate.exchange(url, HttpMethod.PUT, request, Film.class);
         Assertions.assertEquals("Matrix", request.getBody().getName());
@@ -98,12 +115,11 @@ public class FilmControllerTest {
 
     @Test
     public void throwNotFoundException_ifTheMovieWithSameIdDoesNotExist() {
-        Film film = createValidFilm();
-        ResponseEntity<Film> createResponse = restTemplate.postForEntity(url, film, Film.class);
+        NewFilmDto film = createValidFilmDto();
+        ResponseEntity<FilmDto> createResponse = restTemplate.postForEntity(url, film, FilmDto.class);
 
-        Film updatedFilm = film;
-        updatedFilm.setId(9999);
-        HttpEntity<Film> request = new HttpEntity<>(updatedFilm);
+        UpdateFilmDto updatedFilm = createUpdateFilmDto(9999);
+        HttpEntity<UpdateFilmDto> request = new HttpEntity<>(updatedFilm);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
         Assertions.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -112,19 +128,20 @@ public class FilmControllerTest {
 
     @Test
     public void updateOnlyReleaseDate_ifOtherFieldsAreNull() {
-        Film validFilm = createValidFilm();
-        ResponseEntity<Film> createResponse = restTemplate.postForEntity(url, validFilm, Film.class);
+        NewFilmDto validFilm = createValidFilmDto();
+        ResponseEntity<FilmDto> createResponse = restTemplate.postForEntity(url, validFilm, FilmDto.class);
 
-        Film film = createAllNullFilm();
+        UpdateFilmDto film = createUpdateFilmDto(1);
         film.setReleaseDate(LocalDate.of(2000, 12, 1));
-        film.setId(1);
+        film.setDescription(null);
+        film.setName(null);
+        film.setDuration(null);
+        film.setMpa(null);
 
-        HttpEntity<Film> request = new HttpEntity<>(film);
+        HttpEntity<UpdateFilmDto> request = new HttpEntity<>(film);
         ResponseEntity<Film> response = restTemplate.exchange(url, HttpMethod.PUT, request, Film.class);
 
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertEquals(film.getReleaseDate(), request.getBody().getReleaseDate());
     }
-
-
 }
