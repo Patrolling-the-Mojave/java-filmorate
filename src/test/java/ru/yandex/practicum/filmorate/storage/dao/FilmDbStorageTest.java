@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
@@ -11,6 +12,7 @@ import ru.yandex.practicum.filmorate.dto.MpaDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmDto;
 import ru.yandex.practicum.filmorate.dto.NewUserDto;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.dao.mapper.FilmMapper;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -20,7 +22,14 @@ import java.util.Optional;
 
 @JdbcTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@Import({FilmDbStorage.class, GenreDbStorage.class, UserDbStorage.class, MpaRatingDbStorage.class})
+@AutoConfigureTestDatabase
+@Import({FilmDbStorage.class,
+        GenreDbStorage.class,
+        UserDbStorage.class,
+        MpaRatingDbStorage.class,
+        FilmMapper.class,
+
+})
 public class FilmDbStorageTest {
 
     @Autowired
