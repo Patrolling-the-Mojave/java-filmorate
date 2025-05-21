@@ -10,13 +10,14 @@ import java.sql.Date;
 public class UpdateUserDto {
     @NotNull
     Integer id;
-    @Size(max = 15)
+    @Size(max = 20)
     private String name;
 
     @Email(message = "email должен соответствовать формату")
     @NotBlank(message = "email не должен быть пустым")
     private String email;
     @Login
+    @NotBlank
     private String login;
     @Past(message = "дата рождения не может быть в будущем")
     private Date birthday;
