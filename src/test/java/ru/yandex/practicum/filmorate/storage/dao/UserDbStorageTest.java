@@ -20,7 +20,7 @@ import java.util.Optional;
 
 @JdbcTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@AutoConfigureTestDatabase
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @Import({UserDbStorage.class})
 public class UserDbStorageTest {
 

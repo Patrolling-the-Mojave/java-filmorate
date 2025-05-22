@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.dto.NewFilmDto;
 import ru.yandex.practicum.filmorate.dto.NewUserDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.dao.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.storage.dao.mapper.UserMapper;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -22,12 +23,13 @@ import java.util.Optional;
 
 @JdbcTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@AutoConfigureTestDatabase
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @Import({FilmDbStorage.class,
         GenreDbStorage.class,
         UserDbStorage.class,
         MpaRatingDbStorage.class,
         FilmMapper.class,
+        UserMapper.class
 
 })
 public class FilmDbStorageTest {

@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @JdbcTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@AutoConfigureTestDatabase
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @Import({GenreDbStorage.class})
 public class GenreDbStorageTest {
 
