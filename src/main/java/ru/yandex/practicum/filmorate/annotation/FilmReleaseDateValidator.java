@@ -11,7 +11,7 @@ public class FilmReleaseDateValidator implements ConstraintValidator<FilmRelease
     private static final LocalDate CINEMA_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
 
     @Override
-    public boolean isValid(LocalDate localDate, ConstraintValidatorContext constraintValidatorContext) {
-        return localDate.isAfter(CINEMA_BIRTHDAY);
+    public boolean isValid(LocalDate date, ConstraintValidatorContext constraintValidatorContext) {
+        return date.isAfter(CINEMA_BIRTHDAY);
     }
 }

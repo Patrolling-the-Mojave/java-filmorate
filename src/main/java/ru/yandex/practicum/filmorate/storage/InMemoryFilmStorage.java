@@ -3,11 +3,14 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dto.NewFilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.dao.mapper.FilmMapper;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 
 @Component
@@ -18,8 +21,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     private int globalId = 1;
 
     @Override
-    public Film findById(int id) {
-        return films.get(id);
+    public Optional<Film> findById(int id) {
+        return Optional.ofNullable(films.get(id));
     }
 
     @Override
@@ -33,10 +36,16 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film save(Film film) {
+    public Film save(NewFilmDto newFilm) {
+        Film film = FilmMapper.mapNewFilmToFilm(newFilm);
         film.setId(getNewId());
         films.put(film.getId(), film);
         return film;
+    }
+
+    @Override
+    public void update(Film film) {
+        films.put(film.getId(), film);
     }
 
     private int getNewId() {
