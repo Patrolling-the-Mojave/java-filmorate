@@ -11,7 +11,7 @@ import java.sql.Date;
 
 @Data
 public class NewUserDto {
-    @Size(max = 20)
+    @Size(max = 40)
     private String name;
     @Email(message = "email должен соответствовать формату")
     @NotBlank(message = "email не должен быть пустым")

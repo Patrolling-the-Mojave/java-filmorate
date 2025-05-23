@@ -10,7 +10,7 @@ import java.sql.Date;
 public class UpdateUserDto {
     @NotNull
     Integer id;
-    @Size(max = 20)
+    @Size(max = 40)
     private String name;
 
     @Email(message = "email должен соответствовать формату")
