@@ -56,7 +56,7 @@ public class FilmDbStorageTest {
                 .description("A thief who steals corporate secrets...")
                 .releaseDate(LocalDate.of(2010, 7, 16))
                 .duration(148)
-                .mpa(new MpaDto(3))
+                .mpa(MpaDto.builder().id(1).build())
                 .build();
     }
 
