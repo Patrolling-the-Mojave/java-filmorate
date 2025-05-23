@@ -8,10 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
 import ru.yandex.practicum.filmorate.annotation.Login;
-import ru.yandex.practicum.filmorate.enums.FriendshipStatus;
 
 import java.sql.Date;
-import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -19,9 +17,7 @@ import java.util.Set;
 @Setter
 public class User {
     private Integer id;
-    private Set<User> friends;
-    private Map<Integer, FriendshipStatus> friendship;
-
+    private Set<Friendship> friends;
     @Email(message = "email должен соответствовать формату")
     @NotBlank(message = "email не должен быть пустым")
     private String email;

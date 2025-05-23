@@ -3,11 +3,11 @@ package ru.yandex.practicum.filmorate.storage.dao.mapper;
 import lombok.RequiredArgsConstructor;
 import ru.yandex.practicum.filmorate.dto.NewUserDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.HashSet;
 
 @RequiredArgsConstructor
@@ -20,7 +20,6 @@ public class UserMapper {
                 .birthday(rs.getDate("birthday"))
                 .login(rs.getString("login"))
                 .friends(new HashSet<>())
-                .friendship(new HashMap<>())
                 .build();
         return user;
     }
@@ -40,8 +39,20 @@ public class UserMapper {
                 .name(user.getName())
                 .email(user.getEmail())
                 .login(user.getLogin())
-                .friends(user.getFriends())
                 .birthday(user.getBirthday())
+                .friends(user.getFriends())
+                .build();
+    }
+
+    public static UserDto mapFriendShipToUserDto(Friendship friendship) {
+        User friend = friendship.getFriend();
+        return UserDto.builder()
+                .id(friend.getId())
+                .login(friend.getLogin())
+                .name(friend.getName())
+                .birthday(friend.getBirthday())
+                .email(friend.getEmail())
+                .friends(friend.getFriends())
                 .build();
     }
 

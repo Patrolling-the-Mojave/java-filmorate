@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.annotation.FilmReleaseDate;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.time.LocalDate;
@@ -20,7 +19,7 @@ public class FilmDto {
     @NotNull
     private Integer id;
     private Set<Integer> likes = new HashSet<>();
-    private Set<Genre> genres = new TreeSet<>(Comparator.comparingInt(Genre::getId));
+    private Set<GenreDto> genres = new TreeSet<>(Comparator.comparingInt(GenreDto::getId));
     private MpaRating mpa;
     @NotBlank(message = "имя не должно быть пустым")
     private String name;

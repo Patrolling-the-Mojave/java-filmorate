@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dto.NewUserDto;
 import ru.yandex.practicum.filmorate.enums.FriendshipStatus;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -19,7 +20,6 @@ import ru.yandex.practicum.filmorate.storage.dao.mapper.UserMapper;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -39,7 +39,7 @@ public class UserDbStorage implements UserStorage, FriendStorage {
     public Collection<User> findAll() {
         final String FIND_ALL_QUERY = "SELECT * FROM users";
         List<User> users = jdbcTemplate.query(FIND_ALL_QUERY, UserMapper::mapRow);
-        users.forEach(this::loadFriendships);
+        users.forEach(this::loadFriends);
         log.debug("поиск всех пользователей {}", users);
         return users;
     }
@@ -53,7 +53,7 @@ public class UserDbStorage implements UserStorage, FriendStorage {
         } catch (EmptyResultDataAccessException ex) {
             return Optional.empty();
         }
-        loadFriendships(user);
+        loadFriends(user);
         return Optional.of(user);
     }
 
@@ -86,33 +86,34 @@ public class UserDbStorage implements UserStorage, FriendStorage {
         }
     }
 
-    private void loadFriendships(User user) {
-        final String findFriendsQuery = "SELECT fp.friend_id, fps.name" +
-                " FROM friendship AS fp" +
-                " JOIN friendship_status AS fps ON fp.status_id = fps.id" +
-                " WHERE fp.user_id=?";
-
-        Map<Integer, FriendshipStatus> friendshipStatus = new HashMap<>();
+    private void loadFriends(User user) {
+        final String findFriendsQuery = "SELECT f.friend_id FROM friendship AS f" +
+                " JOIN friendship_status AS fs ON f.status_id = fs.id" +
+                " WHERE f.user_id=? AND fs.name='CONFIRMED'";
+        Set<Friendship> friends = new HashSet<>();
 
         jdbcTemplate.query(findFriendsQuery, rs -> {
-            int friendId = rs.getInt("friend_id");
-            FriendshipStatus status = FriendshipStatus.mapFromDbValue(rs.getString("name"));
-            friendshipStatus.put(friendId, status);
+            User friend = getUserById(rs.getInt("friend_id")).get();
+            Friendship friendship = new Friendship(friend, FriendshipStatus.CONFIRMED);
+            friends.add(friendship);
         }, user.getId());
-
-        Set<User> friends = friendshipStatus.keySet().stream()
-                .filter(key -> friendshipStatus.get(key).equals(FriendshipStatus.CONFIRMED))
-                .map(id -> findById(id).get())
-                .collect(Collectors.toSet());
-
         user.setFriends(friends);
-        user.setFriendship(friendshipStatus);
     }
 
     @Override
     public void deleteFriend(int userId, int friendId) {
         final String DELETE_FRIEND_QUERY = "DELETE FROM friendship WHERE user_id=? AND friend_id=?";
         jdbcTemplate.update(DELETE_FRIEND_QUERY, userId, friendId);
+    }
+
+    private Optional<User> getUserById(int id) {
+        User user;
+        try {
+            user = jdbcTemplate.queryForObject("SELECT * FROM users WHERE id=?", UserMapper::mapRow, id);
+        } catch (EmptyResultDataAccessException ex) {
+            return Optional.empty();
+        }
+        return Optional.of(user);
     }
 
     @Override

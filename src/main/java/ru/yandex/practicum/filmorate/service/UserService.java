@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.NewUserDto;
 import ru.yandex.practicum.filmorate.dto.UpdateUserDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.enums.FriendshipStatus;
 import ru.yandex.practicum.filmorate.exception.NoContentException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -15,7 +17,8 @@ import ru.yandex.practicum.filmorate.storage.dao.mapper.UserMapper;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.util.Updates.runIfNotNull;
 
@@ -39,8 +42,7 @@ public class UserService {
     }
 
     public UserDto updateUser(UpdateUserDto newUser) {
-        Optional<User> oldUserOpt = userStorage.findById(newUser.getId());
-        User oldUser = oldUserOpt.orElseThrow(() -> new NotFoundException("Пользователь с id=" + newUser.getId() + " не найден"));
+        User oldUser = getUserById(newUser.getId());
         log.debug("oldUser: " + oldUser);
         runIfNotNull(newUser.getEmail(), () -> oldUser.setEmail(newUser.getEmail()));
         runIfNotNull(newUser.getBirthday(), () -> oldUser.setBirthday(newUser.getBirthday()));
@@ -57,17 +59,14 @@ public class UserService {
     }
 
     public UserDto findById(int id) {
-        Optional<User> userOpt = userStorage.findById(id);
         log.trace("запрос пользователя с Id " + id);
-        return UserMapper.mapToUserDto(userOpt.orElseThrow(() -> new NotFoundException("Пользователь с id=" + id + " не найден")));
+        return UserMapper.mapToUserDto(getUserById(id));
     }
 
     public List<UserDto> addFriend(int id, int friendId) {
-        User user = userStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + id + " не найден"));
-        User friend = userStorage.findById(friendId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + friendId + " не найден"));
-        user.getFriends().add(friend);
+        User user = getUserById(id);
+        User friend = getUserById(friendId);
+        user.getFriends().add(new Friendship(friend, FriendshipStatus.CONFIRMED));
         log.trace("друг " + friend + " добавлен");
         log.debug("обновленный список друзей " + user.getFriends());
         friendStorage.addFriend(id, friendId);
@@ -75,20 +74,13 @@ public class UserService {
     }
 
     public UserDto deleteFriend(int id, int friendId) {
-        Optional<User> userOpt = userStorage.findById(id);
-        Optional<User> friendOpt = userStorage.findById(friendId);
-        if (userOpt.isEmpty()) {
-            throw new NotFoundException("пользователь с id - " + id + " не найден");
-        }
-        if (friendOpt.isEmpty()) {
-            throw new NotFoundException("пользователь с id - " + friendId + " не найден");
-        }
-        User user = userOpt.get();
-        User friend = friendOpt.get();
-        if (!user.getFriends().contains(friend)) {
+        User user = getUserById(id);
+        User friend = getUserById(friendId);
+        Friendship friendship = new Friendship(friend, FriendshipStatus.CONFIRMED);
+        if (!user.getFriends().contains(friendship)) {
             throw new NoContentException(String.format("пользователь %d не является другом для %d", friendId, id));
         }
-        user.getFriends().remove(friend);
+        user.getFriends().remove(friendship);
         log.trace("друг " + friend + " удален");
         log.debug("обновленный список друзей " + user.getFriends());
         friendStorage.deleteFriend(id, friendId);
@@ -96,35 +88,33 @@ public class UserService {
     }
 
     public List<UserDto> getFriendsByUserId(int id) {
-        Optional<User> userOpt = userStorage.findById(id);
-        if (userOpt.isEmpty()) {
-            throw new NotFoundException("пользователь с id - " + id + " не найден");
-        }
-        User user = userOpt.get();
+        User user = getUserById(id);
+        Set<User> friends = user.getFriends().stream()
+                .map(Friendship::getFriend)
+                .collect(Collectors.toSet());
         log.debug("запрос друзей пользователя " + id);
+
         return userStorage.findAll().stream()
-                .filter(usr -> user.getFriends().contains(usr))
+                .filter(friends::contains)
                 .map(UserMapper::mapToUserDto)
                 .toList();
     }
 
     public List<UserDto> getCommonFiends(int id, int otherId) {
-        Optional<User> userOpt = userStorage.findById(id);
-        Optional<User> otherOpt = userStorage.findById(otherId);
-        if (userOpt.isEmpty()) {
-            throw new NotFoundException("пользователь с id - " + id + " не найден");
-        }
-        if (otherOpt.isEmpty()) {
-            throw new NotFoundException("пользователь с id - " + otherId + " не найден");
-        }
-        User user = userOpt.get();
-        User other = otherOpt.get();
+        User user = getUserById(id);
+        User other = getUserById(otherId);
         log.debug("запрос списка общих для " + id + " и " + otherId + " друзей");
-        return user.getFriends().stream()
-                .filter(friend -> other.getFriends().contains(friend))
+        Set<User> userFriends = user.getFriends().stream().map(Friendship::getFriend).collect(Collectors.toSet());
+        Set<User> otherFriends = other.getFriends().stream().map(Friendship::getFriend).collect(Collectors.toSet());
+
+        return userFriends.stream()
+                .filter(otherFriends::contains)
                 .map(UserMapper::mapToUserDto)
                 .toList();
+    }
 
+    private User getUserById(int id) {
+        return userStorage.findById(id).orElseThrow(() -> new NotFoundException("пользователь с id - " + id + " не найден"));
     }
 
 }

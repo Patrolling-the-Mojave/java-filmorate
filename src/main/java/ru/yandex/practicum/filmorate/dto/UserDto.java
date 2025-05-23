@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.Friendship;
 
 import java.sql.Date;
 import java.util.Set;
@@ -15,5 +15,5 @@ public class UserDto {
     private String email;
     private String login;
     private Date birthday;
-    private Set<User> friends;
+    private Set<Friendship> friends;
 }

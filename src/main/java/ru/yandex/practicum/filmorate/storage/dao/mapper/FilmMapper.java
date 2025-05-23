@@ -56,7 +56,8 @@ public class FilmMapper {
         dto.setDuration(film.getDuration());
         dto.setLikes(film.getLikes());
         if (film.getGenres() != null) {
-            film.getGenres().forEach(dto.getGenres()::add);
+            film.getGenres().stream().map(GenreMapper::mapToGenreDto)
+                    .forEach(dto.getGenres()::add);
         }
         if (film.getMpa() != null) {
             dto.setMpa(film.getMpa());

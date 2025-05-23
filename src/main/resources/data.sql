@@ -11,5 +11,5 @@ INSERT INTO genre (id, name) VALUES (4, 'Триллер');
 INSERT INTO genre (id, name) VALUES (5, 'Документальный');
 INSERT INTO genre (id, name) VALUES (6, 'Боевик');
 
-INSERT INTO friendship_status (id, name) VALUES (1, 'confirmed');
-INSERT INTO friendship_status (id, name) VALUES (2, 'pending');
+INSERT INTO friendship_status (id, name) VALUES (1, 'CONFIRMED');
+INSERT INTO friendship_status (id, name) VALUES (2, 'PENDING');
